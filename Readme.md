@@ -1,7 +1,7 @@
 # Личный проект «Кекстаграм» [![Build status][travis-image]][travis-url] [![Dependency status][dependency-image]][dependency-url]
 
 * Студент: [Роман Ткаченко](https://up.htmlacademy.ru/javascript/5/user/197571).
-* Наставник: `Неизвестно`.
+* Наставник: [Игорь Антонов].
 
 ---
 
