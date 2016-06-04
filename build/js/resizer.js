@@ -112,6 +112,18 @@
       // Координаты задаются от центра холста.
       this._ctx.drawImage(this._image, displX, displY);
 
+      //Отрисовка областей изображения. Часть изображения, которая  не попадает
+      //в кадр, затемнена. Координаты задаются от центра.
+      this._ctx.fillStyle = 'rgba(0,0,0,0.8)';
+      this._ctx.rect(
+        (-this._resizeConstraint.side / 2) - this._ctx.lineWidth / 2,
+        (-this._resizeConstraint.side / 2) - this._ctx.lineWidth / 2,
+        this._resizeConstraint.side - this._ctx.lineWidth / 2,
+        this._resizeConstraint.side - this._ctx.lineWidth / 2);
+      this._ctx.rect(-this._container.width / 2, -this._container.height / 2,
+        this._container.width, this._container.height);
+      this._ctx.fill('evenodd');
+
       // Отрисовка прямоугольника, обозначающего область изображения после
       // кадрирования. Координаты задаются от центра.
       this._ctx.strokeRect(
