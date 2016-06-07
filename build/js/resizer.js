@@ -124,6 +124,7 @@
         this._container.width, this._container.height);
       this._ctx.fill('evenodd');
 
+      //Вывод размера кадрируемого изображения.
       this._ctx.fillStyle = 'white';
       this._ctx.font = 'normal 14pt Arial';
       this._ctx.textAlign = 'center';
