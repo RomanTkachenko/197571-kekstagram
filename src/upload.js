@@ -172,6 +172,41 @@
   };
 
   /**
+  * Обработчик для валидации полей формы кадрирования изображения
+  */
+  function resizeFormValidation() {
+    var resizeX = document.querySelector('#resize-x');
+    var resizeValueX = parseInt(resizeX.value, 0) || 0;
+    var resizeY = document.querySelector('#resize-y');
+    var resizeValueY = parseInt(resizeY.value, 0) || 0;
+    var resizeSide = document.querySelector('#resize-size');
+    var resizeValueSide = parseInt(resizeSide.value, 0) || 0;
+    var result = true;
+    resizeX.min = 0;
+    resizeY.min = 0;
+    resizeSide.min = 0;
+    resizeX.max = Math.min(currentResizer._image.naturalWidth, currentResizer._image.naturalHeight);
+    resizeY.max = Math.min(currentResizer._image.naturalWidth, currentResizer._image.naturalHeight);
+    resizeSide.max = Math.min(currentResizer._image.naturalWidth, currentResizer._image.naturalHeight);
+    if((resizeValueX + resizeValueSide) > currentResizer._image.naturalWidth || (resizeValueY + resizeValueSide) > currentResizer._image.naturalHeight) {
+      result = false;
+    }
+    return result;
+  }
+
+  /**
+  *Валидация полей формы кадрирования изображения
+  */
+  resizeForm.addEventListener('input', function() {
+    var btnFwd = document.querySelector('#resize-fwd');
+    if (resizeFormValidation()) {
+      btnFwd.removeAttribute('disabled');
+    } else {
+      btnFwd.setAttribute('disabled', true);
+    }
+  });
+
+  /**
    * Обработка сброса формы кадрирования. Возвращает в начальное состояние
    * и обновляет фон.
    * @param {Event} evt

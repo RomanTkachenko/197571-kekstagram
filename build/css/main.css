@@ -197,6 +197,11 @@ body {
 
   background: rgba(255, 231, 83, 0.2) url("../img/icon-arrow.png") center no-repeat;
 }
+.upload-form-controls-fwd[disabled] {
+  float: right;
+  background: rgba(255, 231, 83, 0.2);
+  cursor:default;
+}
 
 .upload-resize canvas {
   position: absolute;
