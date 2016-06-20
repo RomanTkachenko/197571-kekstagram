@@ -175,11 +175,11 @@
   * Обработчик для валидации полей формы кадрирования изображения
   */
   function resizeFormValidation() {
-    var resizeX = document.querySelector('#resize-x');
+    var resizeX = resizeForm.querySelector('#resize-x');
     var resizeValueX = parseInt(resizeX.value, 0) || 0;
-    var resizeY = document.querySelector('#resize-y');
+    var resizeY = resizeForm.querySelector('#resize-y');
     var resizeValueY = parseInt(resizeY.value, 0) || 0;
-    var resizeSide = document.querySelector('#resize-size');
+    var resizeSide = resizeForm.querySelector('#resize-size');
     var resizeValueSide = parseInt(resizeSide.value, 0) || 0;
     var result = true;
     resizeX.min = 0;
@@ -220,7 +220,6 @@
     resizeForm.classList.add('invisible');
     uploadForm.classList.remove('invisible');
   };
-
   /**
    * Обработка отправки формы кадрирования. Если форма валидна, экспортирует
    * кропнутое изображение в форму добавления фильтра и показывает ее.
@@ -234,6 +233,25 @@
 
       resizeForm.classList.add('invisible');
       filterForm.classList.remove('invisible');
+      if(a1 === 'none') {
+        noneOption.checked = true;
+      } else {
+        noneOption.checked = false;
+      }
+      if(a1 === 'chrome') {
+        chromeOption.checked = true;
+      } else {
+        chromeOption.checked = false;
+      }
+      if(a1 === 'sepia') {
+        sepiaOption.checked = true;
+      } else {
+        sepiaOption.checked = false;
+      }
+      console.log(noneOption.checked);
+      console.log(chromeOption.checked);
+      console.log(sepiaOption.checked);
+
     }
   };
 
@@ -248,6 +266,19 @@
     resizeForm.classList.remove('invisible');
   };
 
+  var browserCookies = require('browser-cookies');
+  var noneOption = filterForm.querySelector('#upload-filter-none');
+  var chromeOption = filterForm.querySelector('#upload-filter-chrome');
+  var sepiaOption = filterForm.querySelector('#upload-filter-sepia');
+
+  var ImageOption = filterForm.elements['upload-filter'];
+  var a1 = browserCookies.get('ImageOption');
+
+
+
+
+
+
   /**
    * Отправка формы фильтра. Возвращает в начальное состояние, предварительно
    * записав сохраненный фильтр в cookie.
@@ -255,6 +286,8 @@
    */
   filterForm.onsubmit = function(evt) {
     evt.preventDefault();
+
+    browserCookies.set('ImageOption', ImageOption.value);
 
     cleanupResizer();
     updateBackground();
@@ -282,6 +315,7 @@
     var selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
       return item.checked;
     })[0].value;
+
 
     // Класс перезаписывается, а не обновляется через classList потому что нужно
     // убрать предыдущий примененный класс. Для этого нужно или запоминать его
