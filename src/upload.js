@@ -198,11 +198,11 @@
   *Валидация полей формы кадрирования изображения
   */
   resizeForm.addEventListener('input', function() {
-    var btnFwd = document.querySelector('#resize-fwd');
+    var confirmResize = document.querySelector('#resize-fwd');
     if (resizeFormValidation()) {
-      btnFwd.removeAttribute('disabled');
+      confirmResize.removeAttribute('disabled');
     } else {
-      btnFwd.setAttribute('disabled', true);
+      confirmResize.setAttribute('disabled', true);
     }
   });
 
@@ -233,25 +233,6 @@
 
       resizeForm.classList.add('invisible');
       filterForm.classList.remove('invisible');
-      if(a1 === 'none') {
-        noneOption.checked = true;
-      } else {
-        noneOption.checked = false;
-      }
-      if(a1 === 'chrome') {
-        chromeOption.checked = true;
-      } else {
-        chromeOption.checked = false;
-      }
-      if(a1 === 'sepia') {
-        sepiaOption.checked = true;
-      } else {
-        sepiaOption.checked = false;
-      }
-      console.log(noneOption.checked);
-      console.log(chromeOption.checked);
-      console.log(sepiaOption.checked);
-
     }
   };
 
@@ -267,18 +248,44 @@
   };
 
   var browserCookies = require('browser-cookies');
+
   var noneOption = filterForm.querySelector('#upload-filter-none');
   var chromeOption = filterForm.querySelector('#upload-filter-chrome');
   var sepiaOption = filterForm.querySelector('#upload-filter-sepia');
 
-  var ImageOption = filterForm.elements['upload-filter'];
-  var a1 = browserCookies.get('ImageOption');
+  var ImageOptionCookies = filterForm.elements['upload-filter'];
 
+  var imageOption = browserCookies.get('ImageOptionCookies') || 'none';
 
+  if(imageOption === 'none') {
+    noneOption.checked = true;
+  } else {
+    noneOption.checked = false;
+  }
+  if(imageOption === 'chrome') {
+    chromeOption.checked = true;
+  } else {
+    chromeOption.checked = false;
+  }
+  if(imageOption === 'sepia') {
+    sepiaOption.checked = true;
+  } else {
+    sepiaOption.checked = false;
+  }
 
+  var selectedFilter = imageOption;
+  filterMap = {
+    'none': 'filter-none',
+    'chrome': 'filter-chrome',
+    'sepia': 'filter-sepia'
+  };
+  filterImage.className = 'filter-image-preview ' + filterMap[selectedFilter];
 
-
-
+  var today = new Date();
+  var currentYear = today.getFullYear();
+  var lastBirthday = new Date(currentYear, 1, 23);
+  var delta = today - lastBirthday;
+  var daysToExpires = delta / 1000 / 60 / 60 / 24;
   /**
    * Отправка формы фильтра. Возвращает в начальное состояние, предварительно
    * записав сохраненный фильтр в cookie.
@@ -287,7 +294,7 @@
   filterForm.onsubmit = function(evt) {
     evt.preventDefault();
 
-    browserCookies.set('ImageOption', ImageOption.value);
+    browserCookies.set('ImageOptionCookies', ImageOptionCookies.value, {expires: daysToExpires});
 
     cleanupResizer();
     updateBackground();
@@ -301,21 +308,10 @@
    * выбранному значению в форме.
    */
   filterForm.onchange = function() {
-    if (!filterMap) {
-      // Ленивая инициализация. Объект не создается до тех пор, пока
-      // не понадобится прочитать его в первый раз, а после этого запоминается
-      // навсегда.
-      filterMap = {
-        'none': 'filter-none',
-        'chrome': 'filter-chrome',
-        'sepia': 'filter-sepia'
-      };
-    }
 
-    var selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
+    selectedFilter = [].filter.call(filterForm['upload-filter'], function(item) {
       return item.checked;
     })[0].value;
-
 
     // Класс перезаписывается, а не обновляется через classList потому что нужно
     // убрать предыдущий примененный класс. Для этого нужно или запоминать его
