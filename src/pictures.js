@@ -30,6 +30,7 @@ var getPictureElement = function(data, container) {
   var galleryImage = new Image();
   galleryImage.onload = function(evt) {
     element.querySelector('img').url = '\'' + evt.target.src + '\'';
+    console.log(element.querySelector('img').url);
   };
   galleryImage.src = data.url;
 
