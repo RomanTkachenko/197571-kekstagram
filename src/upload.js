@@ -257,21 +257,9 @@
 
   var imageOption = browserCookies.get('ImageOptionCookies') || 'none';
 
-  if(imageOption === 'none') {
-    noneOption.checked = true;
-  } else {
-    noneOption.checked = false;
-  }
-  if(imageOption === 'chrome') {
-    chromeOption.checked = true;
-  } else {
-    chromeOption.checked = false;
-  }
-  if(imageOption === 'sepia') {
-    sepiaOption.checked = true;
-  } else {
-    sepiaOption.checked = false;
-  }
+  chromeOption.checked = (imageOption === 'chrome');
+  noneOption.checked = (imageOption === 'none');
+  sepiaOption.checked = (imageOption === 'sepia');
 
   var selectedFilter = imageOption;
   filterMap = {
@@ -281,11 +269,14 @@
   };
   filterImage.className = 'filter-image-preview ' + filterMap[selectedFilter];
 
-  var today = new Date();
-  var currentYear = today.getFullYear();
-  var lastBirthday = new Date(currentYear, 1, 23);
-  var delta = today - lastBirthday;
-  var daysToExpires = delta / 1000 / 60 / 60 / 24;
+  var daysToExpires = function(today) {
+    today = new Date();
+    var currentYear = today.getFullYear();
+    var lastBirthday = new Date(currentYear, 1, 23);
+    var delta = today - lastBirthday;
+    return(delta / 1000 / 60 / 60 / 24);
+  };
+
   /**
    * Отправка формы фильтра. Возвращает в начальное состояние, предварительно
    * записав сохраненный фильтр в cookie.
