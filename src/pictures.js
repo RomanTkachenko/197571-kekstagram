@@ -5,12 +5,16 @@ var filterBlock = document.getElementsByClassName('filters');
 filterBlock[0].classList.add('hidden');
 
 var picturesContainer = document.querySelector('.pictures');
-console.log(picturesContainer);
+
 
 var templateElement = document.querySelector('template');
-console.log(templateElement);
+
 
 var elementToClone;
+
+/** @constant {string} */
+var PICTURES_LOAD_URL = '//o0.github.io/assets/json/pictures.json';
+
 
 if ('content' in templateElement) {
   elementToClone = templateElement.content.querySelector('.picture');
@@ -34,7 +38,7 @@ var getPictureElement = function(data, container) {
     element.querySelector('img').src = evt.target.src;
     element.querySelector('img').width = 182;
     element.querySelector('img').height = 182;
-    console.log(element.querySelector('img').src);
+
   };
 
   galleryImage.onerror = function() {
@@ -50,13 +54,50 @@ var getPictureElement = function(data, container) {
 
   container.appendChild(element);
 
-
-
   return element;
 };
 
-window.pictures.forEach(function(picture) {
-  getPictureElement(picture, picturesContainer);
+/** @param {function(Array.<Object>)} callback */
+var getPictures = function(callback) {
+  var xhr = new XMLHttpRequest();
+  xhr.open('GET', PICTURES_LOAD_URL);
+
+  /** @param {ProgressEvent} */
+  xhr.onload = function(evt) {
+    var loadedData = JSON.parse(evt.target.response);
+    callback(loadedData);
+  };
+
+//Прелоадер
+  xhr.onreadystatechange = function() {
+    if (this.readyState === 3) {
+      picturesContainer.classList.add('pictures-loading');
+    }else{
+      picturesContainer.classList.remove('pictures-loading');
+    }
+  };
+
+//Предупреждение об ошибке в случае неудачной загрузки
+  var actErrorStatus = function() {
+    picturesContainer.classList.add('pictures-failure');
+  };
+  xhr.onerror = actErrorStatus;
+  xhr.timeout = 10000;
+  xhr.ontimeout = actErrorStatus;
+
+  xhr.send();
+};
+
+/** @param {Array.<Object>} hotels */
+var renderPictures = function(pictures) {
+  pictures.forEach(function(picture) {
+    getPictureElement(picture, picturesContainer);
+  });
+};
+
+getPictures(function(loadedPictures) {
+  var pictures = loadedPictures;
+  renderPictures(pictures);
 });
 
 filterBlock[0].classList.remove('hidden');
