@@ -584,3 +584,10 @@ input[type=radio]:checked + .upload-filter-label {
 .likes-count-liked:before {
   background-position-x: -18px;
 }
+
+.filter-new-error {
+  margin-top: 10px;
+  color:red;
+  font-size: 16px;
+  text-transform: uppercase;
+}

@@ -6,16 +6,12 @@ filterBlock.classList.add('hidden');
 
 var picturesContainer = document.querySelector('.pictures');
 
-
-var templateElement = document.querySelector('template');
-
+var templateElement = document.getElementById('picture-template');
 
 var elementToClone;
 
 /** @constant {string} */
 var PICTURES_LOAD_URL = '//o0.github.io/assets/json/pictures.json';
-
-
 
 if ('content' in templateElement) {
   elementToClone = templateElement.content.querySelector('.picture');
@@ -90,20 +86,15 @@ var renderPictures = function(pictures) {
   });
 };
 
-
-
 var pictures = [];
-
+var DEFAULT_FILTER = 'filter-popular';
 getPictures(function(loadedPictures) {
   pictures = loadedPictures;
-  renderPictures(loadedPictures);
-  setFiltersEnabled(true);
-
+  setFilterName(true);
+  setFilterEnabled(DEFAULT_FILTER);
 });
 
 filterBlock.classList.remove('hidden');
-
-
 
 var Filter = {
   POPULARITY: 'filter-popular',
@@ -111,57 +102,49 @@ var Filter = {
   DISCUSSED: 'filter-discussed'
 };
 
-
-
-var setFiltersEnabled = function(enabled) {
+var setFilterName = function(enabled) {
   var filters = document.querySelectorAll('.filters-radio');
   for (var i = 0; i < filters.length; i++) {
     filters[i].onclick = enabled ? function() {
-      //var setFilter = this.id;
-      //console.log(setFilter);
       setFilterEnabled(this.id);
     } : null;
   }
 };
 
 var setFilterEnabled = function(filter) {
-  //console.log(filter);
   var filteredPictures = getFilteredPictures(filter);
-  //console.log(filteredPictures);
   renderPictures(filteredPictures);
 };
 
 var getFilteredPictures = function(filter) {
-  //console.log(filter);
   var picturesToFilter = pictures.slice(0);
-  //console.log(picturesToFilter);
+  var filterNewPhotoMessage = document.querySelector('.filter-new-error');
 
   switch(filter) {
     case Filter.POPULARITY:
       picturesToFilter.sort(function(a, b) {
         return b.likes - a.likes;
       });
+      filterNewPhotoMessage.classList.add('hidden');
       break;
-
 
     case Filter.NEWEST:
-      var newestLoadedPictures = picturesToFilter.filter(function(creature) {
+      picturesToFilter = picturesToFilter.filter(function(creature) {
         return (new Date() - new Date(creature.date)) < (DAYS_SINCE_PICTURE_LOAD * 24 * 60 * 60 * 1000);
-      });
-
-      picturesToFilter = newestLoadedPictures;
-      picturesToFilter.sort(function(a, b) {
+      }).sort(function(a, b) {
         return new Date(b.date) - new Date(a.date);
       });
+      if(picturesToFilter.length === 0) {
+        filterNewPhotoMessage.classList.remove('hidden');
+      }
       break;
-
 
     case Filter.DISCUSSED:
       picturesToFilter.sort(function(a, b) {
         return b.comments - a.comments;
       });
+      filterNewPhotoMessage.classList.add('hidden');
       break;
   }
-  //console.log(picturesToFilter);
   return picturesToFilter;
 };
