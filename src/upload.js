@@ -269,13 +269,14 @@
   };
   filterImage.className = 'filter-image-preview ' + filterMap[selectedFilter];
 
-  var daysToExpires = function(today) {
-    today = new Date();
+  function getDaysToExpire() {
+    var today = new Date();
     var currentYear = today.getFullYear();
     var lastBirthday = new Date(currentYear, 1, 23);
     var delta = today - lastBirthday;
-    return(delta / 1000 / 60 / 60 / 24);
-  };
+    var daysToExpires = delta / 1000 / 60 / 60 / 24;
+    return daysToExpires;
+  }
 
   /**
    * Отправка формы фильтра. Возвращает в начальное состояние, предварительно
@@ -285,7 +286,7 @@
   filterForm.onsubmit = function(evt) {
     evt.preventDefault();
 
-    browserCookies.set('ImageOptionCookies', ImageOptionCookies.value, {expires: daysToExpires});
+    browserCookies.set('ImageOptionCookies', ImageOptionCookies.value, {expires: getDaysToExpire()});
 
     cleanupResizer();
     updateBackground();
