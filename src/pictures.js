@@ -60,9 +60,7 @@ var getPictures = function(callback) {
 
 //Прелоадер
   xhr.onreadystatechange = function() {
-    if (this.readyState === 3) {
-      picturesContainer.classList.add('pictures-loading');
-    }else{
+    if (this.readyState !== 3) {
       picturesContainer.classList.remove('pictures-loading');
     }
   };
@@ -76,6 +74,7 @@ var getPictures = function(callback) {
   xhr.ontimeout = actErrorStatus;
 
   xhr.send();
+  picturesContainer.classList.add('pictures-loading');
 };
 
 /** @param {Array.<Object>} pictures */
