@@ -18,6 +18,9 @@ if ('content' in templateElement) {
 } else {
   elementToClone = templateElement.querySelector('.picture');
 }
+var pictures = [];
+
+var filteredPictures = [];
 
 var IMAGE_LOAD_TIMEOUT = 10000;
 var DAYS_SINCE_PICTURE_LOAD = 4;
@@ -77,20 +80,30 @@ var getPictures = function(callback) {
   picturesContainer.classList.add('pictures-loading');
 };
 
+var PAGE_SIZE = 12;
+var pageNumber = 0;
+
+
 /** @param {Array.<Object>} pictures */
-var renderPictures = function(pictures) {
-  picturesContainer.innerHTML = '';
-  pictures.forEach(function(picture) {
+var renderPictures = function(picturesToRender, page, replace) {
+  if(replace) {
+    picturesContainer.innerHTML = '';
+  }
+  var from = page * PAGE_SIZE;
+  var to = from + PAGE_SIZE;
+
+  picturesToRender.slice(from, to).forEach(function(picture) {
     getPictureElement(picture, picturesContainer);
   });
 };
 
-var pictures = [];
+
 var DEFAULT_FILTER = 'filter-popular';
 getPictures(function(loadedPictures) {
   pictures = loadedPictures;
   setFilterName(true);
   setFilterEnabled(DEFAULT_FILTER);
+  setScrollEnabled();
 });
 
 filterBlock.classList.remove('hidden');
@@ -111,8 +124,9 @@ var setFilterName = function(enabled) {
 };
 
 var setFilterEnabled = function(filter) {
-  var filteredPictures = getFilteredPictures(filter);
-  renderPictures(filteredPictures);
+  filteredPictures = getFilteredPictures(filter);
+  pageNumber = 0;
+  renderPictures(filteredPictures, pageNumber, true);
 };
 
 var getFilteredPictures = function(filter) {
@@ -146,4 +160,35 @@ var getFilteredPictures = function(filter) {
       break;
   }
   return picturesToFilter;
+};
+
+var isBottomReached = function() {
+  var GAP = 100;
+  var bodyElement = document.querySelector('body');
+  var bodyPosition = bodyElement.getBoundingClientRect();
+  return bodyPosition.bottom - window.innerHeight - GAP <= 0;
+};
+//console.log(isBottomReached);
+
+var isNextPageAvailible = function(picturesToRender, page) {
+  return page < Math.ceil(picturesToRender.length / PAGE_SIZE);
+};
+
+var THROTTLE_DELAY = 100;
+var lastCall = Date.now();
+
+var scrollHandler = function() {
+  if(Date.now() - lastCall >= THROTTLE_DELAY) {
+    if(isBottomReached() &&
+      isNextPageAvailible(pictures, pageNumber)) {
+      pageNumber++;
+      renderPictures(filteredPictures, pageNumber, false);
+    }
+    lastCall = Date.now();
+  }
+};
+
+var setScrollEnabled = function() {
+
+  window.addEventListener('scroll', scrollHandler);
 };
