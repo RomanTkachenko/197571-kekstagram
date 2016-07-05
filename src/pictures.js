@@ -80,21 +80,42 @@ var getPictures = function(callback) {
   picturesContainer.classList.add('pictures-loading');
 };
 
+var isBottomReached = function() {
+  var GAP = 100;
+  var bodyElement = document.querySelector('body');
+  var bodyPosition = bodyElement.getBoundingClientRect();
+  return bodyPosition.bottom - window.innerHeight - GAP <= 0;
+};
+
+var isNextPageAvailible = function(picturesToRender, page) {
+  return page < Math.ceil(picturesToRender.length / PAGE_SIZE);
+};
+
 var PAGE_SIZE = 12;
 var pageNumber = 0;
 
 
 /** @param {Array.<Object>} pictures */
-var renderPictures = function(picturesToRender, page, replace) {
-  if(replace) {
-    picturesContainer.innerHTML = '';
-  }
+var renderPictures = function(picturesToRender, page) {
   var from = page * PAGE_SIZE;
   var to = from + PAGE_SIZE;
-
+  var container = document.createDocumentFragment();
   picturesToRender.slice(from, to).forEach(function(picture) {
-    getPictureElement(picture, picturesContainer);
+    getPictureElement(picture, container);
   });
+  picturesContainer.appendChild(container);
+};
+
+var renderNextPages = function(reset) {
+  if(reset) {
+    pageNumber = 0;
+    picturesContainer.innerHTML = '';
+  }
+  while(isBottomReached() &&
+    isNextPageAvailible(filteredPictures, pageNumber, PAGE_SIZE)) {
+    renderPictures(filteredPictures, pageNumber);
+    pageNumber++;
+  }
 };
 
 
@@ -124,8 +145,8 @@ var setFilterName = function() {
 
 var setFilterEnabled = function(filter) {
   filteredPictures = getFilteredPictures(filter);
-  pageNumber = 0;
-  renderPictures(filteredPictures, pageNumber, true);
+  renderNextPages(true);
+
 };
 
 var getFilteredPictures = function(filter) {
@@ -161,33 +182,14 @@ var getFilteredPictures = function(filter) {
   return picturesToFilter;
 };
 
-var isBottomReached = function() {
-  var GAP = 100;
-  var bodyElement = document.querySelector('body');
-  var bodyPosition = bodyElement.getBoundingClientRect();
-  return bodyPosition.bottom - window.innerHeight - GAP <= 0;
-};
-//console.log(isBottomReached);
-
-var isNextPageAvailible = function(picturesToRender, page) {
-  return page < Math.ceil(picturesToRender.length / PAGE_SIZE);
-};
-
 var THROTTLE_DELAY = 100;
-var lastCall = Date.now();
-
-var scrollHandler = function() {
-  if(Date.now() - lastCall >= THROTTLE_DELAY) {
-    if(isBottomReached() &&
-      isNextPageAvailible(pictures, pageNumber)) {
-      pageNumber++;
-      renderPictures(filteredPictures, pageNumber, false);
-    }
-    lastCall = Date.now();
-  }
-};
 
 var setScrollEnabled = function() {
-
-  window.addEventListener('scroll', scrollHandler);
+  var lastCall = Date.now();
+  window.addEventListener('scroll', function() {
+    if(Date.now() - lastCall >= THROTTLE_DELAY) {
+      renderNextPages();
+      lastCall = Date.now();
+    }
+  });
 };
