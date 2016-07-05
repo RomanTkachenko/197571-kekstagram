@@ -18,6 +18,9 @@ if ('content' in templateElement) {
 } else {
   elementToClone = templateElement.querySelector('.picture');
 }
+var pictures = [];
+
+var filteredPictures = [];
 
 var IMAGE_LOAD_TIMEOUT = 10000;
 var DAYS_SINCE_PICTURE_LOAD = 4;
@@ -60,9 +63,7 @@ var getPictures = function(callback) {
 
 //Прелоадер
   xhr.onreadystatechange = function() {
-    if (this.readyState === 3) {
-      picturesContainer.classList.add('pictures-loading');
-    }else{
+    if (this.readyState !== 3) {
       picturesContainer.classList.remove('pictures-loading');
     }
   };
@@ -76,22 +77,54 @@ var getPictures = function(callback) {
   xhr.ontimeout = actErrorStatus;
 
   xhr.send();
+  picturesContainer.classList.add('pictures-loading');
 };
+
+var isBottomReached = function() {
+  var GAP = 100;
+  var bodyElement = document.querySelector('body');
+  var bodyPosition = bodyElement.getBoundingClientRect();
+  return bodyPosition.bottom - window.innerHeight - GAP <= 0;
+};
+
+var isNextPageAvailible = function(picturesToRender, page) {
+  return page < Math.ceil(picturesToRender.length / PAGE_SIZE);
+};
+
+var PAGE_SIZE = 12;
+var pageNumber = 0;
+
 
 /** @param {Array.<Object>} pictures */
-var renderPictures = function(pictures) {
-  picturesContainer.innerHTML = '';
-  pictures.forEach(function(picture) {
-    getPictureElement(picture, picturesContainer);
+var renderPictures = function(picturesToRender, page) {
+  var from = page * PAGE_SIZE;
+  var to = from + PAGE_SIZE;
+  var container = document.createDocumentFragment();
+  picturesToRender.slice(from, to).forEach(function(picture) {
+    getPictureElement(picture, container);
   });
+  picturesContainer.appendChild(container);
 };
 
-var pictures = [];
+var renderNextPages = function(reset) {
+  if(reset) {
+    pageNumber = 0;
+    picturesContainer.innerHTML = '';
+  }
+  while(isBottomReached() &&
+    isNextPageAvailible(filteredPictures, pageNumber, PAGE_SIZE)) {
+    renderPictures(filteredPictures, pageNumber);
+    pageNumber++;
+  }
+};
+
+
 var DEFAULT_FILTER = 'filter-popular';
 getPictures(function(loadedPictures) {
   pictures = loadedPictures;
   setFilterName(true);
   setFilterEnabled(DEFAULT_FILTER);
+  setScrollEnabled();
 });
 
 filterBlock.classList.remove('hidden');
@@ -102,18 +135,18 @@ var Filter = {
   DISCUSSED: 'filter-discussed'
 };
 
-var setFilterName = function(enabled) {
-  var filters = document.querySelectorAll('.filters-radio');
-  for (var i = 0; i < filters.length; i++) {
-    filters[i].onclick = enabled ? function() {
-      setFilterEnabled(this.id);
-    } : null;
-  }
+var setFilterName = function() {
+  filterBlock.addEventListener('click', function(evt) {
+    if(evt.target.classList.contains('filters-radio')) {
+      setFilterEnabled(evt.target.id);
+    }
+  });
 };
 
 var setFilterEnabled = function(filter) {
-  var filteredPictures = getFilteredPictures(filter);
-  renderPictures(filteredPictures);
+  filteredPictures = getFilteredPictures(filter);
+  renderNextPages(true);
+
 };
 
 var getFilteredPictures = function(filter) {
@@ -147,4 +180,16 @@ var getFilteredPictures = function(filter) {
       break;
   }
   return picturesToFilter;
+};
+
+var THROTTLE_DELAY = 100;
+
+var setScrollEnabled = function() {
+  var lastCall = Date.now();
+  window.addEventListener('scroll', function() {
+    if(Date.now() - lastCall >= THROTTLE_DELAY) {
+      renderNextPages();
+      lastCall = Date.now();
+    }
+  });
 };
