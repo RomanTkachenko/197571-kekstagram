@@ -114,13 +114,12 @@ var Filter = {
   DISCUSSED: 'filter-discussed'
 };
 
-var setFilterName = function(enabled) {
-  var filters = document.querySelectorAll('.filters-radio');
-  for (var i = 0; i < filters.length; i++) {
-    filters[i].onclick = enabled ? function() {
-      setFilterEnabled(this.id);
-    } : null;
-  }
+var setFilterName = function() {
+  filterBlock.addEventListener('click', function(evt) {
+    if(evt.target.classList.contains('filters-radio')) {
+      setFilterEnabled(evt.target.id);
+    }
+  });
 };
 
 var setFilterEnabled = function(filter) {
